@@ -27,9 +27,13 @@ fn impl_glium_vertex(ast: &syn::MacroInput) -> quote::Tokens {
     let struct_name1 = std::iter::repeat(&struct_name);
     let struct_name2 = std::iter::repeat(&struct_name);
 
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    let ty_generics1 = std::iter::repeat(&ty_generics);
+    let ty_generics2 = std::iter::repeat(&ty_generics);
+
     quote! {
         // The generated impl
-        impl ::glium::vertex::Vertex for #struct_name {
+        impl #impl_generics ::glium::vertex::Vertex for #struct_name #ty_generics #where_clause {
             #[inline]
             fn build_bindings() -> ::glium::vertex::VertexFormat {
                 use std::borrow::Cow;
@@ -40,7 +44,7 @@ fn impl_glium_vertex(ast: &syn::MacroInput) -> quote::Tokens {
                         (
                             Cow::Borrowed(stringify!(#field_name1)),
                             {
-                                let dummy: &#struct_name1 = unsafe {
+                                let dummy: &#struct_name1#ty_generics1 = unsafe {
                                     ::std::mem::transmute(0usize)
                                 };
                                 let dummy_field = &dummy.#field_name2;
@@ -50,12 +54,12 @@ fn impl_glium_vertex(ast: &syn::MacroInput) -> quote::Tokens {
                                 dummy_field
                             },
                             {
-                                fn attr_type_of_val<T: ::glium::vertex::Attribute>(_: &T)
+                                fn attr_type_of_val<Z: ::glium::vertex::Attribute>(_: &Z)
                                     -> ::glium::vertex::AttributeType
                                 {
-                                    <T as ::glium::vertex::Attribute>::get_type()
+                                    <Z as ::glium::vertex::Attribute>::get_type()
                                 }
-                                let dummy: &#struct_name2 = unsafe {
+                                let dummy: &#struct_name2#ty_generics2 = unsafe {
                                     ::std::mem::transmute(0usize)
                                 };
                                 attr_type_of_val(&dummy.#field_name3)
